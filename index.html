@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+
+<body>
+
+
+  <video id="video" controls ></video>
+
+  <script>
+
+    //视频格式和编码信息，主要为判断浏览器是否支持视频格式，但如果信息和视频不符可能会报错
+    const mimeCodec = 'video/mp4; codecs="avc1.42E01E, mp4a.40.2"';
+    if ('MediaSource' in window && MediaSource.isTypeSupported(mimeCodec)) {
+      const mediaSource = new MediaSource();
+      video.src = URL.createObjectURL(mediaSource); //将video与MediaSource绑定，此处生成一个Blob URL
+      mediaSource.addEventListener('sourceopen', sourceOpen); //可以理解为容器打开
+    } else {
+      //浏览器不支持该视频格式
+      console.error('Unsupported MIME type or codec: ', mimeCodec);
+    }
+
+    function sourceOpen() {
+      let start = 0;
+      let end = 4000000;
+      const mediaSource = this;
+      const sourceBuffer = mediaSource.addSourceBuffer(mimeCodec);
+
+      async function getNextVideo(url) {
+        //ajax代码实现翻看上文，数据请求类型为arraybuffer
+        axios.get(url, {
+          headers: {
+            'range': `bytes=${start}-`,
+          },
+          responseType: 'arraybuffer'
+        }).then(async res => {
+          start = end
+          end += 100000
+          sourceBuffer.appendBuffer(res.data);
+        })
+      }
+      //每次appendBuffer数据更新完之后就会触发
+      sourceBuffer.addEventListener("updateend", function () {
+        video.play()
+        // video.play()
+        //全部视频片段加载完关闭容器
+        if(end < 59691068){
+          getNextVideo('https://mallcdn.youpenglai.com/video/admall-8Wat1wkZo-tTUdVzIv-aCoMLXSm-6KqmAEwX-mi2N5JBh-BmgzMikP-GnzXRtTR-R-1583422031025.mp4')
+        }
+        // mediaSource.endOfStream();
+        // URL.revokeObjectURL(video.src); //Blob URL已经使用并加载，不需要再次使用的话可以释放掉。
+      });
+      //加载初始视频
+      getNextVideo('https://mallcdn.youpenglai.com/video/admall-8Wat1wkZo-tTUdVzIv-aCoMLXSm-6KqmAEwX-mi2N5JBh-BmgzMikP-GnzXRtTR-R-1583422031025.mp4')
+    };
+
+
+
+  </script>
+
+</body>
+
+</html>
