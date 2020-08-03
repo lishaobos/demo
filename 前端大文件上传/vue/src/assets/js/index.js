@@ -1,14 +1,15 @@
+/* eslint-disable no-debugger */
 export const compose = (...functions) => {
-    const firstFnc = functions.reverse().shift()
+    const firstFnc = functions.shift()
     return (...args) => functions.reduce((c, n) => n(c), firstFnc(...args))
   }
   
-export const asyncCompose = async (...functions) => {
-    const firstFnc = functions.reverse().shift()
+export const asyncCompose = (...functions) => {
+    const firstFnc = functions.shift()
     return (...args) => functions.reduce(async (c, n) => {
-        const res = await c
-        return n(res)
-    }, firstFnc(...args))
+            const res = await c
+            return n(res)
+        }, firstFnc(...args))
 }
   
 export const curry = fnc => {
